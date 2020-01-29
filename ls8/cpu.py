@@ -70,33 +70,31 @@ class CPU:
 
     def run(self):
         """Run the CPU.
-        It needs to read the memory address that's stored in register `PC`, and store
-        that result in `IR`, the _Instruction Register_. This can just be a local
-        variable in `run()`.
-
-        Some instructions requires up to the next two bytes of data _after_ the `PC` in
-        memory to perform operations on. Sometimes the byte value is a register number,
-        other times it's a constant value (in the case of `LDI`). Using `ram_read()`,
-        read the bytes at `PC+1` and `PC+2` from RAM into variables `operand_a` and
-        `operand_b` in case the instruction needs them.
-
-        Then, depending on the value of the opcode, perform the actions needed for the
-        instruction per the LS-8 spec. Maybe an `if-elif` cascade...? There are other
-        options, too.
         """
+
         running = True
         while running:
-            if self.ram[self.pc] == 0b10000010:
-                print(self.ram[self.pc+1])
-                self.pc +=1
-            elif self.ram[self.pc] == 0b00000001:
-                print(self.ram[self.pc])
-                self.pc = 0
+            operand_a = self.ram_read(self.pc + 1)
+            operand_b = self.ram_read(self.pc + 2)
+
+            IR = self.ram[self.pc] 
+            HLT = 0b00000001
+            LDI = 0b10000010
+            PRN = 0b01000111
+
+            if IR == HLT: 
                 running = False
-                # exit()
-            # break
-            # else:
-            #     print(f'Error: Unknow command')
+            elif IR == LDI: #LDI load immediate, 
+                #This instruction sets a specified register to a specified value.
+                #Set the value of a register to an integer.
+                self.reg[operand_a] = operand_b
+                self.pc += 3  # follow the program
+            elif IR == PRN:
+                index = self.ram_read(IR +1)
+                print(self.reg[index])
+                self.pc += 2
+            else:
+                print(f'Error: Unknow command')
 
             
 
