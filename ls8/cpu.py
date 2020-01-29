@@ -17,34 +17,29 @@ class CPU:
         self.ir = None             #Instruction Register, contains a copy of the currently executing instruction
 
 
-    def load(self):
+    def load(self, filename):
         """Load a program into memory."""
 
         address = 0
-
-        # For now, we've just hardcoded a program:
-
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
-
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
-
+        with open(filename) as f:
+            for line in f:
+                comment_split = line.split("#")
+                num = comment_split[0].strip()
+                if num == "":
+                    continue
+                val = int(num, 2)
+                self.ram[address] = val
+                address += 1
 
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
-
+        
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
-        #elif op == "SUB": etc
+        elif op == "SUB":
+            self.reg[reg_a] -= self.reg[reg_b]
+        elif op == "MUL":
+            self.reg[reg_a] *= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -81,20 +76,24 @@ class CPU:
             HLT = 0b00000001
             LDI = 0b10000010
             PRN = 0b01000111
-
+            MUL = 0b10100010
             if IR == HLT: 
                 running = False
-            elif IR == LDI: #LDI load immediate, 
-                #This instruction sets a specified register to a specified value.
-                #Set the value of a register to an integer.
+            elif IR == LDI:
                 self.reg[operand_a] = operand_b
-                self.pc += 3  # follow the program
+                self.pc += 3 
             elif IR == PRN:
                 index = self.ram_read(IR +1)
                 print(self.reg[index])
+                print(sys.argv[1])
                 self.pc += 2
+                #Multiply the values in two registers together and store the result in registerA
+            elif IR == MUL:
+                self.alu('MUL', (operand_a), (operand_b))
+                self.pc += 3
+                # print(result)
             else:
-                print(f'Error: Unknow command')
+                print(f'Error: Unknow command: {IR}')
 
             
 

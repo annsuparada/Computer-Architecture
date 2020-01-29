@@ -6,8 +6,8 @@ import sys
 from cpu import *
 
 cpu = CPU()
-# HLT
-cpu.load()
+
+cpu.load(sys.argv[1])
 cpu.run()
 
 # cpu.trace()
