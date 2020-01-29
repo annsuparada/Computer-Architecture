@@ -14,8 +14,11 @@ class CPU:
         self.reg = [0] * 8         #register
         self.ram = [0] * 256        
         self.pc = 0                #Program Counter, address of the currently executing instruction
-        self.ir = None             #Instruction Register, contains a copy of the currently executing instruction
-
+        self.branchtable = {}
+        self.branchtable[0b00000001] = self.handle_HLT
+        self.branchtable[0b10000010] = self.handle_LDI
+        self.branchtable[0b01000111] = self.handle_PRN
+        self.branchtable[0b10100010] = self.handle_MUL
 
     def load(self, filename):
         """Load a program into memory."""
@@ -63,37 +66,42 @@ class CPU:
 
         print()
 
+    def handle_HLT(self):
+        self.pc = 0
+        return 'HLT'
+
+    def handle_LDI(self):
+        operand_a = self.ram_read(self.pc + 1)
+        operand_b = self.ram_read(self.pc + 2)
+        self.reg[operand_a] = operand_b
+        self.pc += 3 
+
+    def handle_PRN(self):
+        index = self.ram_read(self.ram[self.pc] +1)
+        print(self.reg[index])
+        self.pc += 2
+
+    def handle_MUL(self):
+        operand_a = self.ram_read(self.pc + 1)
+        operand_b = self.ram_read(self.pc + 2)
+        self.alu('MUL', (operand_a), (operand_b))
+        self.pc += 3
+        
     def run(self):
         """Run the CPU.
         """
 
         running = True
         while running:
-            operand_a = self.ram_read(self.pc + 1)
-            operand_b = self.ram_read(self.pc + 2)
 
-            IR = self.ram[self.pc] 
-            HLT = 0b00000001
-            LDI = 0b10000010
-            PRN = 0b01000111
-            MUL = 0b10100010
-            if IR == HLT: 
-                running = False
-            elif IR == LDI:
-                self.reg[operand_a] = operand_b
-                self.pc += 3 
-            elif IR == PRN:
-                index = self.ram_read(IR +1)
-                print(self.reg[index])
-                print(sys.argv[1])
-                self.pc += 2
-                #Multiply the values in two registers together and store the result in registerA
-            elif IR == MUL:
-                self.alu('MUL', (operand_a), (operand_b))
-                self.pc += 3
-                # print(result)
-            else:
+            IR = self.ram_read(self.pc) 
+            try:
+                return_command = self.branchtable[IR]()
+                if return_command == 'HLT':
+                    running = False
+            except KeyError:
                 print(f'Error: Unknow command: {IR}')
+                sys.exit(1)
 
             
 
