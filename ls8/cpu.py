@@ -19,6 +19,8 @@ class CPU:
         self.branchtable[0b10000010] = self.handle_LDI
         self.branchtable[0b01000111] = self.handle_PRN
         self.branchtable[0b10100010] = self.handle_MUL
+        self.branchtable[0b01000101] = self.handle_PUSH
+        self.branchtable[0b01000110] = self.handle_POP
 
     def load(self, filename):
         """Load a program into memory."""
@@ -86,7 +88,39 @@ class CPU:
         operand_b = self.ram_read(self.pc + 2)
         self.alu('MUL', (operand_a), (operand_b))
         self.pc += 3
-        
+
+    def handle_PUSH(self):
+        """
+        Push the value in the given register on the stack.
+        1. Decrement the `SP`.
+        2. Copy the value in the given register to the address pointed to by`SP`.
+        """
+        SP = 7
+        address = self.ram_read(self.pc + 1)
+        value = self.reg[address]
+        # Decrement the SP.
+        self.reg[SP] -= 1
+        # Copy the value in the given register to the address pointed to by SP.
+        self.ram[self.reg[SP]] = value
+        # Increment PC by 2
+        self.pc += 2
+
+    def handle_POP(self):
+        """
+        Pop the value at the top of the stack into the given register.
+        1. Copy the value from the address pointed to by `SP` to the given register.
+        2. Increment `SP`.
+        """
+        SP = 7
+        address = self.ram[self.pc + 1]
+        # Copy the value from the address pointed to by SP to the given register.
+        value = self.ram[self.reg[SP]]
+        self.reg[address] = value
+        # Increment SP.
+        self.reg[SP] += 1
+        # Increment PC by 2
+        self.pc += 2
+
     def run(self):
         """Run the CPU.
         """

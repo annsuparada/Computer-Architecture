@@ -11,26 +11,26 @@ registers = [0] * 8
 pc = 0
 running = True
 
-# def load_memory(filename):
-#     try:
-#         address = 0
-#         with open(filename) as f:
-#             for line in f:
-#                 # Ignore comments
-#                 comment_split = line.split("#")
-#                 num = comment_split[0].strip()
-#                 if num == "":
-#                     continue  # Ignore blank lines
-#                 value = int(num)   # Base 10, but ls-8 is base 2
-#                 memory[address] = value
-#                 address += 1
-#     except FileNotFoundError:
-#         print(f"{sys.argv[0]}: {filename} not found")
-#         sys.exit(2)
-# if len(sys.argv) != 2:
-#     print("Usage: file.py filename", file=sys.stderr)
-#     sys.exit(1)
-# load_memory(sys.argv[1])
+def load_memory(filename):
+    try:
+        address = 0
+        with open(filename) as f:
+            for line in f:
+                # Ignore comments
+                comment_split = line.split("#")
+                num = comment_split[0].strip()
+                if num == "":
+                    continue  # Ignore blank lines
+                value = int(num)   # Base 10, but ls-8 is base 2
+                memory[address] = value
+                address += 1
+    except FileNotFoundError:
+        print(f"{sys.argv[0]}: {filename} not found")
+        sys.exit(2)
+if len(sys.argv) != 2:
+    print("Usage: file.py filename", file=sys.stderr)
+    sys.exit(1)
+load_memory(sys.argv[1])
 
 print(memory)
 print(f'memory[pc]: {memory[pc]}')
